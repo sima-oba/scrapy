@@ -55,12 +55,12 @@ jobs:
         run: |-
           kubectl delete secret scrapy-secret --ignore-not-found=true -n sima
           kubectl create secret generic scrapy-secret \
-            --from-literal=ARCGIS_USER=$ARCGIS_USER
-            --from-literal=ARCGIS_PASSWORD=$ARCGIS_PASSWORD
-            --from-literal=SEIA_USER=$SEIA_USER
-            --from-literal=SEIA_PASSWORD=$SEIA_PASSWORD
-            --from-literal=SIMA_USER=$SIMA_USER
-            --from-literal=SIMA_PASSWORD=$SIMA_PASSWORD
+            --from-literal=ARCGIS_USER=$ARCGIS_USER \
+            --from-literal=ARCGIS_PASSWORD=$ARCGIS_PASSWORD \
+            --from-literal=SEIA_USER=$SEIA_USER \
+            --from-literal=SEIA_PASSWORD=$SEIA_PASSWORD \
+            --from-literal=SIMA_USER=$SIMA_USER \
+            --from-literal=SIMA_PASSWORD=$SIMA_PASSWORD \
             --from-literal=MONGO_HOST=mongodb.mongo.svc.cluster.local \
             --from-literal=MONGO_PORT=27017 \
             --from-literal=MONGO_DB=scrapy \
