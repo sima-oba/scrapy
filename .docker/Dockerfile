@@ -1,0 +1,18 @@
+FROM selenium/standalone-chrome:98.0
+
+WORKDIR /code
+
+# Install pip
+RUN sudo apt-get update && \
+    sudo apt-get install python3-pip -y && \
+    sudo pip3 install --upgrade pip && \
+    sudo apt-get install -y cron poppler-utils tesseract-ocr
+
+# Install pip requirements
+COPY requirements.txt .
+RUN python3 -m pip install -r requirements.txt
+
+COPY . ./
+RUN sudo chown -R seluser. /code
+
+ENTRYPOINT ["python3", "-m", "gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "main:app"]

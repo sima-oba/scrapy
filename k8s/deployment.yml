@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scrapy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scrapy-rest
+  template:
+    metadata:
+      labels:
+        app: scrapy-rest
+    spec:
+      containers:
+      - name: scrapy-rest
+        image: $REGISTRY-docker.pkg.dev/$PROJECT_ID/sima/scrapy:$IMAGE_TAG
+        imagePullPolicy: Always
+        ports:
+        - name: rest
+          containerPort: 5000
+        envFrom:
+          - secretRef:
+              name: scrapy-secret
+          - configMapRef:
+              name: scrapy-conf
+        resources:
+          limits:
+            memory: "1280Mi"
+            cpu: "500m"

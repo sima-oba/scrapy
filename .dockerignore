@@ -1,0 +1,9 @@
+*
+
+!app
+!config.py
+!logging.ini
+!main.py
+!requirements.txt
+
+**/__pycache__
