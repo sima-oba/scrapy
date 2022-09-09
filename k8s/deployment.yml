@@ -26,5 +26,5 @@ spec:
               name: scrapy-conf
         resources:
           limits:
-            memory: "1280Mi"
-            cpu: "500m"
+            memory: "1024Mi"
+            cpu: "200m"
