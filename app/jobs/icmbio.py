@@ -1,3 +1,4 @@
+from asyncio import selector_events
 import logging
 import os
 import shutil
@@ -8,6 +9,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.action_chains import ActionChains
 
 from .. import publisher
 from . import utils
@@ -29,6 +31,7 @@ class ICMBioImporter:
         self._driver = webdriver.Chrome(options=options)
         self._url = 'http://mapas.mma.gov.br/i3geo/datadownload.htm'
         self._download_dir = download_dir or '/tmp/icmbio-temp/'
+        self._actions = ActionChains(self._driver)
 
         os.makedirs(self._download_dir, exist_ok=True)
 
@@ -53,6 +56,25 @@ class ICMBioImporter:
         self._wait_element((By.CSS_SELECTOR, 'td[title=florestaspublicas]'))
         self._wait_element((By.CSS_SELECTOR, 'td[title=cprmgeoparques]'))
         self._wait_element((By.CSS_SELECTOR, 'td[title=corredores_ppg7]'))
+
+
+        # expandir os menus
+        # Biomas
+        log.debug('Expanding menu "Biomas"')
+        self._wait_element((By.ID, 'ygtvt23'))
+        self._actions.move_to_element(self._driver.find_element(By.XPATH, '//*[@id="ygtvt23"]/a'))
+        self._actions.click()
+        self._actions.perform()
+        
+        # Mata atlantica
+        log.debug('Expanding menu "Mata Atlântica"')
+        self._wait_element((By.ID, 'ygtvt26'))
+        self._actions.move_to_element(self._driver.find_element(By.XPATH, '//*[@id="ygtvt26"]/a'))
+        self._actions.click()
+        self._actions.perform() 
+        
+        self._wait_element((By.CSS_SELECTOR, 'td[title=mata_atlantica11428]'))
+       
 
     def get_conservation_units(self):
         selector = 'td[title=ucstodas]'
@@ -204,6 +226,33 @@ class ICMBioImporter:
 
         return df[columns]
 
+    def get_atlantic_forest_law(self):
+        selector = 'td[title=mata_atlantica11428]'
+        element = self._driver.find_element(By.CSS_SELECTOR, selector)
+        self._actions.move_to_element(element)
+        self._actions.click()
+        self._actions.perform()
+
+        
+        self._driver.find_element(By.CSS_SELECTOR, selector).click()
+        
+        columns = [
+            'imported_id_0', 
+            'imported_id_1', 
+            'name', 
+            'geometry'
+        ]
+
+        df = self._download_shape('mata_atlantica11428')
+        df.rename(columns={
+            df.columns[0]: columns[0],
+            df.columns[1]: columns[1],
+            df.columns[2]: columns[2],
+            df.columns[3]: columns[3]
+        }, inplace=True)
+
+        return df[columns]
+
     def tear_down(self):
         self._driver.close()
         shutil.rmtree(self._download_dir)
@@ -294,6 +343,14 @@ def icmbio():
     for reg in importer.get_geo_parks().iterrows():
         try:
             _publish('ICMBIO_GEOPARK', reg)
+            success += 1
+        except Exception as e:
+            log.error(e)
+
+    for reg in importer.get_atlantic_forest_law().iterrows():
+        try:
+            # _publish('ICMBIO_ATLANTIC_FOREST_LAW', reg)
+            print(reg)
             success += 1
         except Exception as e:
             log.error(e)
