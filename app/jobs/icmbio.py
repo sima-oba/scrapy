@@ -58,8 +58,26 @@ class ICMBioImporter:
         self._wait_element((By.CSS_SELECTOR, 'td[title=corredores_ppg7]'))
 
 
-        # expandir os menus
-        # Biomas
+        # Expandir menu para biomas
+        # Ambiente físico e biodiversidade
+        log.debug('Expanding menu "Ambiente físico e biodiversidade"')
+        self._wait_element((By.ID, 'ygtvt15'))
+        element = self._driver.find_element(By.XPATH, '//*[@id="ygtvt15"]/a')
+        self._actions.move_to_element(element)
+        self._actions.click()
+        self._actions.perform()
+        
+        # Bioregiões
+        log.debug('Expanding menu "Bioregiões"')
+        self._wait_element((By.ID, 'ygtvt35'))
+        element = self._driver.find_element(By.XPATH, '//*[@id="ygtvt35"]/a')
+        self._actions.move_to_element(element)
+        self._actions.click()
+        self._actions.perform()
+        self._wait_element((By.CSS_SELECTOR, 'td[title=bioma]'))
+
+
+        # Expandir menu para biomas para leit da mata atlantica
         log.debug('Expanding menu "Biomas"')
         self._wait_element((By.ID, 'ygtvt23'))
         self._actions.move_to_element(self._driver.find_element(By.XPATH, '//*[@id="ygtvt23"]/a'))
@@ -233,8 +251,7 @@ class ICMBioImporter:
         self._actions.click()
         self._actions.perform()
 
-        
-        self._driver.find_element(By.CSS_SELECTOR, selector).click()
+        df = self._download_shape('mata_atlantica11428')
         
         columns = [
             'imported_id_0', 
@@ -243,7 +260,31 @@ class ICMBioImporter:
             'geometry'
         ]
 
-        df = self._download_shape('mata_atlantica11428')
+        df.rename(columns={
+            df.columns[0]: columns[0],
+            df.columns[1]: columns[1],
+            df.columns[2]: columns[2],
+            df.columns[3]: columns[3]
+        }, inplace=True)
+
+        return df[columns]
+
+    def get_bioma(self):
+        selector = 'td[title=bioma]'
+        element = self._driver.find_element(By.CSS_SELECTOR, selector)
+        self._actions.move_to_element(element)
+        self._actions.click()
+        self._actions.perform()
+
+        df = self._download_shape('bioma')
+        
+        columns = [
+            'ID_0', 
+            'name', 
+            'ID_2', 
+            'geometry'
+        ]
+
         df.rename(columns={
             df.columns[0]: columns[0],
             df.columns[1]: columns[1],
@@ -349,6 +390,16 @@ def icmbio():
 
     for reg in importer.get_atlantic_forest_law().iterrows():
         try:
+            # TODO: topico kafka para lei da mata
+            # _publish('ICMBIO_ATLANTIC_FOREST_LAW', reg)
+            print(reg)
+            success += 1
+        except Exception as e:
+            log.error(e)
+
+    for reg in importer.get_bioma().iterrows():
+        try:
+            # TODO: topico kafka para bioma
             # _publish('ICMBIO_ATLANTIC_FOREST_LAW', reg)
             print(reg)
             success += 1
