@@ -58,7 +58,7 @@ class ICMBioImporter:
         self._wait_element((By.CSS_SELECTOR, 'td[title=corredores_ppg7]'))
 
 
-        # Expandir menu para biomas
+        # Expandir menu para biomas e vegetação
         # Ambiente físico e biodiversidade
         log.debug('Expanding menu "Ambiente físico e biodiversidade"')
         self._wait_element((By.ID, 'ygtvt15'))
@@ -76,8 +76,15 @@ class ICMBioImporter:
         self._actions.perform()
         self._wait_element((By.CSS_SELECTOR, 'td[title=bioma]'))
 
+        # Vegetação
+        self._wait_element((By.ID, 'ygtvt28'))
+        element = self._driver.find_element(By.XPATH, '//*[@id="ygtvt28"]/a')
+        self._actions.move_to_element(element)
+        self._actions.click()
+        self._actions.perform()
 
-        # Expandir menu para biomas para leit da mata atlantica
+
+        # Expandir menu para biomas para lei da mata atlantica
         log.debug('Expanding menu "Biomas"')
         self._wait_element((By.ID, 'ygtvt23'))
         self._actions.move_to_element(self._driver.find_element(By.XPATH, '//*[@id="ygtvt23"]/a'))
@@ -294,6 +301,39 @@ class ICMBioImporter:
 
         return df[columns]
 
+    def get_cerrado_vegetation(self):
+        selector = 'td[title=vegetacao]'
+        self._wait_element((By.CSS_SELECTOR, selector))
+        element = self._driver.find_element(By.CSS_SELECTOR, selector)
+        self._actions.move_to_element(element)
+        self._actions.click()
+        self._actions.perform()
+
+        df = self._download_shape('vegetacao')
+        
+        columns = [
+            'GID0', 
+            'NOME1', 
+            'TIPO2',
+            'DESC_TIP3',
+            'SIGLA4',
+            'FONTE5',
+            'geometry'
+        ]
+
+        df.rename(columns={
+            df.columns[0]: columns[0],
+            df.columns[1]: columns[1],
+            df.columns[2]: columns[2],
+            df.columns[3]: columns[3],
+            df.columns[4]: columns[4],
+            df.columns[5]: columns[5],
+            df.columns[6]: columns[6]
+        }, inplace=True)
+
+        return df[columns]
+
+
     def tear_down(self):
         self._driver.close()
         shutil.rmtree(self._download_dir)
@@ -401,6 +441,15 @@ def icmbio():
         try:
             # TODO: topico kafka para bioma
             # _publish('ICMBIO_ATLANTIC_FOREST_LAW', reg)
+            print(reg)
+            success += 1
+        except Exception as e:
+            log.error(e)
+
+    for reg in importer.get_cerrado_vegetation().iterrows():
+        try:
+            # TODO: topico kafka para bioma
+            # _publish('CERRADO VEGETATION', reg)
             print(reg)
             success += 1
         except Exception as e:

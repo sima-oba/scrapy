@@ -61,7 +61,8 @@ def import_matopiba():
     matopiba = geopandas.read_file(glob('temp/extract-matopiba/*.shp')[0])
     shutil.rmtree('./temp')
 
+    log.debug("Saving in to kafka")
     for reg in matopiba.iterrows():
-        print(reg[1])
+        # TODO: topico kafka
+        publisher.publish("matopiba", reg[1])
 
-    print(len(matopiba))
