@@ -26,7 +26,7 @@ class ICMBioImporter:
         options.add_argument('ignore-certificate-errors')
         options.add_argument('disable-dev-shm-usage')
         options.add_argument('disable-gpu')
-        options.add_argument('headless')
+        # options.add_argument('headless')
 
         self._driver = webdriver.Chrome(options=options)
         self._url = 'http://mapas.mma.gov.br/i3geo/datadownload.htm'
@@ -41,16 +41,16 @@ class ICMBioImporter:
         self._wait_element((By.ID, 'ygtvt14'))
 
         log.debug('Expanding menu "Áreas Especiais"')
-        self._driver.find_element_by_id('ygtvt14').click()
+        self._driver.find_element(By.ID, 'ygtvt14').click()
 
         log.debug('Expanding menu "Unidades de conservação"')
         self._wait_element((By.ID, 'ygtvt26'))
-        self._driver.find_element_by_id('ygtvt26').click()
+        self._driver.find_element(By.ID, 'ygtvt26').click()
         self._wait_element((By.CSS_SELECTOR, 'td[title=ucstodas]'))
 
         log.debug('Expanding menu "Outras áreas"')
         self._wait_element((By.ID, 'ygtvt27'))
-        self._driver.find_element_by_id('ygtvt27').click()
+        self._driver.find_element(By.ID, 'ygtvt27').click()
         self._wait_element((By.CSS_SELECTOR, 'td[title=indi2010]'))
         self._wait_element((By.CSS_SELECTOR, 'td[title=cprmsitgeo]'))
         self._wait_element((By.CSS_SELECTOR, 'td[title=florestaspublicas]'))
@@ -77,6 +77,7 @@ class ICMBioImporter:
         self._wait_element((By.CSS_SELECTOR, 'td[title=bioma]'))
 
         # Vegetação
+        log.debug('Expanding menu "Vegatação"')
         self._wait_element((By.ID, 'ygtvt28'))
         element = self._driver.find_element(By.XPATH, '//*[@id="ygtvt28"]/a')
         self._actions.move_to_element(element)
@@ -97,14 +98,18 @@ class ICMBioImporter:
         self._actions.move_to_element(self._driver.find_element(By.XPATH, '//*[@id="ygtvt26"]/a'))
         self._actions.click()
         self._actions.perform() 
-        
-        self._wait_element((By.CSS_SELECTOR, 'td[title=mata_atlantica11428]'))
        
 
     def get_conservation_units(self):
+        log.debug('Getting "Unidades de conservação" shapefile')
         selector = 'td[title=ucstodas]'
-        self._driver.find_element_by_css_selector(selector).click()
-
+        self._wait_element((By.CSS_SELECTOR, selector))
+        
+        element = self._driver.find_element(By.CSS_SELECTOR, selector)
+        self._actions.move_to_element(element)
+        self._actions.click()
+        self._actions.perform()
+        
         columns = [
             'imported_id',
             'name',
@@ -133,12 +138,20 @@ class ICMBioImporter:
             df.columns[12]: columns[9]
         }, inplace=True)
 
+        self._container_close()
+        
         return df[columns]
 
     def get_indigenous_land(self):
+        log.debug('Getting "Terras indígenas" shapefile')
         selector = 'td[title=indi2010]'
-        self._driver.find_element_by_css_selector(selector).click()
-
+        self._wait_element((By.CSS_SELECTOR, selector))
+        
+        element = self._driver.find_element(By.CSS_SELECTOR, selector)
+        self._actions.move_to_element(element)
+        self._actions.click()
+        self._actions.perform()
+        
         columns = [
             'imported_id',
             'location',
@@ -173,12 +186,20 @@ class ICMBioImporter:
             df.columns[22]: columns[12]
         }, inplace=True)
 
+        self._container_close()
+        
         return df[columns]
 
     def get_geo_sites(self):
+        log.debug('Getting "Sitios geologicos" shapefile')
         selector = 'td[title=cprmsitgeo]'
-        self._driver.find_element_by_css_selector(selector).click()
-
+        self._wait_element((By.CSS_SELECTOR, selector))
+        
+        element = self._driver.find_element(By.CSS_SELECTOR, selector)
+        self._actions.move_to_element(element)
+        self._actions.click()
+        self._actions.perform()
+        
         columns = [
             'imported_id',
             'latitude',
@@ -201,17 +222,26 @@ class ICMBioImporter:
             df.columns[9]: columns[6],
         }, inplace=True)
 
+        self._container_close()
+        
         return df[columns]
 
     def get_florestas_publicas(self):
+        log.debug('Getting "Florestas públicas" shapefile')
         selector = 'td[title=florestaspublicas]'
-        self._driver.find_element_by_css_selector(selector).click()
-
+        self._wait_element((By.CSS_SELECTOR, selector))
+        
+        element = self._driver.find_element(By.CSS_SELECTOR, selector)
+        self._actions.move_to_element(element)
+        self._actions.click()
+        self._actions.perform()
+        
         return self._download_shape('florestas_publicas')
 
     def get_geo_parks(self):
+        log.debug('Getting "Parques geologico" shapefile')
         selector = 'td[title=cprmgeoparques]'
-        self._driver.find_element_by_css_selector(selector).click()
+        self._driver.find_element(By.CSS_SELECTOR, selector).click()
 
         columns = [
             'imported_id',
@@ -235,12 +265,18 @@ class ICMBioImporter:
             df.columns[6]: columns[6]
         }, inplace=True)
 
+        self._container_close()
+        
         return df[columns]
 
     def get_corridors(self):
+        log.debug('Getting "Corredores" shapefile')
         selector = 'td[title=corredores_ppg7]'
-        self._driver.find_element_by_css_selector(selector).click()
-
+        self._wait_element((By.CSS_SELECTOR, selector))
+        element = self._driver.find_element(By.CSS_SELECTOR, selector)
+        self._actions.move_to_element(element)
+        self._actions.click()
+        self._actions.perform()
         columns = ['imported_id', 'name', 'geometry']
 
         df = self._download_shape('corredores')
@@ -249,10 +285,14 @@ class ICMBioImporter:
             df.columns[1]: columns[1]
         }, inplace=True)
 
+        self._container_close()
+        
         return df[columns]
 
     def get_atlantic_forest_law(self):
+        log.debug('Getting "Mata atlantica" shapefile')
         selector = 'td[title=mata_atlantica11428]'
+        self._wait_element((By.CSS_SELECTOR, selector))
         element = self._driver.find_element(By.CSS_SELECTOR, selector)
         self._actions.move_to_element(element)
         self._actions.click()
@@ -274,10 +314,14 @@ class ICMBioImporter:
             df.columns[3]: columns[3]
         }, inplace=True)
 
+        self._container_close()
+        
         return df[columns]
 
     def get_bioma(self):
+        log.debug('Getting "Biomas" shapefile')
         selector = 'td[title=bioma]'
+        
         element = self._driver.find_element(By.CSS_SELECTOR, selector)
         self._actions.move_to_element(element)
         self._actions.click()
@@ -299,11 +343,15 @@ class ICMBioImporter:
             df.columns[3]: columns[3]
         }, inplace=True)
 
+        self._container_close()
+        
         return df[columns]
 
     def get_cerrado_vegetation(self):
+        log.debug('Getting "Vegetação do cerrado" shapefile')
         selector = 'td[title=vegetacao]'
         self._wait_element((By.CSS_SELECTOR, selector))
+        
         element = self._driver.find_element(By.CSS_SELECTOR, selector)
         self._actions.move_to_element(element)
         self._actions.click()
@@ -321,6 +369,9 @@ class ICMBioImporter:
             'geometry'
         ]
 
+
+        # TODO: filtro para a região utilizando o shape de biomas
+
         df.rename(columns={
             df.columns[0]: columns[0],
             df.columns[1]: columns[1],
@@ -331,18 +382,26 @@ class ICMBioImporter:
             df.columns[6]: columns[6]
         }, inplace=True)
 
+        self._container_close()
+        
         return df[columns]
 
 
     def tear_down(self):
-        self._driver.close()
+        # self._driver.close()
         shutil.rmtree(self._download_dir)
+
+    def _container_close(self):
+        xpath = '//*[@id="panellistaarquivos"]/a'
+        self._wait_element((By.XPATH, xpath))
+        self._driver.find_element(By.XPATH, xpath).click()
 
     def _wait_element(self, locator: tuple, timeout: int = 60):
         condition = EC.presence_of_element_located(locator)
         WebDriverWait(self._driver, timeout).until(condition)
 
     def _download_shape(self, shape_name, encoding='utf8'):
+        log.debug(f'Download "{shape_name}" shapefile')
         self._wait_element(
             (By.CSS_SELECTOR, '#panellistaarquivos a[href$=shp]')
         )
@@ -359,12 +418,12 @@ class ICMBioImporter:
         shape = self._extract_shape(shp_file, encoding)
 
         close_selector = '#panellistaarquivos a.container-close'
-        self._driver.find_element_by_css_selector(close_selector).click()
+        self._driver.find_element(By.CSS_SELECTOR, close_selector).click()
 
         return shape
 
     def _download_from_element(self, selector: str, filename: str):
-        element = self._driver.find_element_by_css_selector(selector)
+        element = self._driver.find_element(By.CSS_SELECTOR, selector)
         href = element.get_attribute('href')
         path = f'{self._download_dir}{filename}'
 
