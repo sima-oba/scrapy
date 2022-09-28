@@ -1,9 +1,7 @@
-from asyncio import selector_events
 import logging
 import os
 import shutil
 import geopandas
-import pandas
 from shapely.geometry import mapping
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -41,15 +39,16 @@ class ICMBioImporter:
         self._wait_element((By.ID, 'ygtvt14'))
 
         log.debug('Expanding menu "Áreas Especiais"')
+        self._wait_element((By.ID, 'ygtvt14'), timeout=5)
         self._driver.find_element(By.ID, 'ygtvt14').click()
 
         log.debug('Expanding menu "Unidades de conservação"')
-        self._wait_element((By.ID, 'ygtvt26'))
+        self._wait_element((By.ID, 'ygtvt26'), timeout=5)
         self._driver.find_element(By.ID, 'ygtvt26').click()
         self._wait_element((By.CSS_SELECTOR, 'td[title=ucstodas]'))
 
         log.debug('Expanding menu "Outras áreas"')
-        self._wait_element((By.ID, 'ygtvt27'))
+        self._wait_element((By.ID, 'ygtvt27'), timeout=5)
         self._driver.find_element(By.ID, 'ygtvt27').click()
         self._wait_element((By.CSS_SELECTOR, 'td[title=indi2010]'))
         self._wait_element((By.CSS_SELECTOR, 'td[title=cprmsitgeo]'))
@@ -61,44 +60,38 @@ class ICMBioImporter:
         # Expandir menu para biomas e vegetação
         # Ambiente físico e biodiversidade
         log.debug('Expanding menu "Ambiente físico e biodiversidade"')
-        self._wait_element((By.ID, 'ygtvt15'))
+        self._wait_element((By.ID, 'ygtvt15'), timeout=5)
         element = self._driver.find_element(By.XPATH, '//*[@id="ygtvt15"]/a')
         self._actions.move_to_element(element)
         self._actions.click()
         self._actions.perform()
-        
-        # Bioregiões
-        log.debug('Expanding menu "Bioregiões"')
-        self._wait_element((By.ID, 'ygtvt35'))
-        element = self._driver.find_element(By.XPATH, '//*[@id="ygtvt35"]/a')
-        self._actions.move_to_element(element)
-        self._actions.click()
-        self._actions.perform()
-        self._wait_element((By.CSS_SELECTOR, 'td[title=bioma]'))
 
         # Vegetação
-        log.debug('Expanding menu "Vegatação"')
-        self._wait_element((By.ID, 'ygtvt28'))
-        element = self._driver.find_element(By.XPATH, '//*[@id="ygtvt28"]/a')
+        self._wait_element((By.ID, 'ygtvt42'), timeout=5)
+        log.debug('Expanding menu "Vegetação"')
+        element = self._driver.find_element(By.XPATH, '//*[@id="ygtvt42"]/a')
         self._actions.move_to_element(element)
         self._actions.click()
         self._actions.perform()
-
+        self._wait_element((By.CSS_SELECTOR, 'td[title=vegetacao]'), 5)
 
         # Expandir menu para biomas para lei da mata atlantica
         log.debug('Expanding menu "Biomas"')
-        self._wait_element((By.ID, 'ygtvt23'))
-        self._actions.move_to_element(self._driver.find_element(By.XPATH, '//*[@id="ygtvt23"]/a'))
+        self._wait_element((By.ID, 'ygtvt23'), timeout=5)
+        element = self._driver.find_element(By.XPATH, '//*[@id="ygtvt23"]/a')
+        self._actions.move_to_element(element)
         self._actions.click()
         self._actions.perform()
-        
+        element.click()
+
         # Mata atlantica
+        self._wait_element((By.ID, 'ygtvt50'), timeout=5)
         log.debug('Expanding menu "Mata Atlântica"')
-        self._wait_element((By.ID, 'ygtvt26'))
-        self._actions.move_to_element(self._driver.find_element(By.XPATH, '//*[@id="ygtvt26"]/a'))
+        element = self._driver.find_element(By.XPATH, '//*[@id="ygtvt50"]/a')
+        self._actions.move_to_element(element)
         self._actions.click()
-        self._actions.perform() 
-       
+        self._actions.perform()
+
 
     def get_conservation_units(self):
         log.debug('Getting "Unidades de conservação" shapefile')
@@ -137,8 +130,6 @@ class ICMBioImporter:
             df.columns[10]: columns[8],
             df.columns[12]: columns[9]
         }, inplace=True)
-
-        self._container_close()
         
         return df[columns]
 
@@ -185,8 +176,6 @@ class ICMBioImporter:
             df.columns[17]: columns[11],
             df.columns[22]: columns[12]
         }, inplace=True)
-
-        self._container_close()
         
         return df[columns]
 
@@ -221,8 +210,6 @@ class ICMBioImporter:
             df.columns[7]: columns[5],
             df.columns[9]: columns[6],
         }, inplace=True)
-
-        self._container_close()
         
         return df[columns]
 
@@ -264,8 +251,6 @@ class ICMBioImporter:
             df.columns[5]: columns[5],
             df.columns[6]: columns[6]
         }, inplace=True)
-
-        self._container_close()
         
         return df[columns]
 
@@ -284,8 +269,6 @@ class ICMBioImporter:
             df.columns[0]: columns[0],
             df.columns[1]: columns[1]
         }, inplace=True)
-
-        self._container_close()
         
         return df[columns]
 
@@ -313,8 +296,6 @@ class ICMBioImporter:
             df.columns[2]: columns[2],
             df.columns[3]: columns[3]
         }, inplace=True)
-
-        self._container_close()
         
         return df[columns]
 
@@ -342,8 +323,6 @@ class ICMBioImporter:
             df.columns[2]: columns[2],
             df.columns[3]: columns[3]
         }, inplace=True)
-
-        self._container_close()
         
         return df[columns]
 
@@ -381,8 +360,6 @@ class ICMBioImporter:
             df.columns[5]: columns[5],
             df.columns[6]: columns[6]
         }, inplace=True)
-
-        self._container_close()
         
         return df[columns]
 
@@ -401,7 +378,6 @@ class ICMBioImporter:
         WebDriverWait(self._driver, timeout).until(condition)
 
     def _download_shape(self, shape_name, encoding='utf8'):
-        log.debug(f'Download "{shape_name}" shapefile')
         self._wait_element(
             (By.CSS_SELECTOR, '#panellistaarquivos a[href$=shp]')
         )
@@ -491,7 +467,7 @@ def icmbio():
         try:
             # TODO: topico kafka para lei da mata
             # _publish('ICMBIO_ATLANTIC_FOREST_LAW', reg)
-            print(reg)
+            log.debug(reg)
             success += 1
         except Exception as e:
             log.error(e)
@@ -500,7 +476,7 @@ def icmbio():
         try:
             # TODO: topico kafka para bioma
             # _publish('ICMBIO_ATLANTIC_FOREST_LAW', reg)
-            print(reg)
+            log.debug(reg)
             success += 1
         except Exception as e:
             log.error(e)
@@ -509,7 +485,7 @@ def icmbio():
         try:
             # TODO: topico kafka para bioma
             # _publish('CERRADO VEGETATION', reg)
-            print(reg)
+            log.debug(reg)
             success += 1
         except Exception as e:
             log.error(e)
