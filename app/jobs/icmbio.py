@@ -339,17 +339,14 @@ class ICMBioImporter:
         df = self._download_shape('vegetacao')
         
         columns = [
-            'GID0', 
-            'NOME1', 
-            'TIPO2',
-            'DESC_TIP3',
-            'SIGLA4',
-            'FONTE5',
+            'ID', 
+            'NOME', 
+            'BIOMA',
+            'DESCRICAO',
+            'SIGLA',
+            'FONTE',
             'geometry'
         ]
-
-
-        # TODO: filtro para a região utilizando o shape de biomas
 
         df.rename(columns={
             df.columns[0]: columns[0],
@@ -360,6 +357,8 @@ class ICMBioImporter:
             df.columns[5]: columns[5],
             df.columns[6]: columns[6]
         }, inplace=True)
+        
+        df = df[df["BIOMA"] == "Cerrado"]
         
         return df[columns]
 
