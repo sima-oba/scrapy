@@ -169,7 +169,7 @@ def sao_francisco_basin(url):
 def aquifer(url):
     dataframe = _extract_shp(url, '/tmp/aquifero')
 
-    for row in dataframe.iterrows(url):
+    for row in dataframe.iterrows():
         row = row[1].to_dict()
         data = {
             'imported_id': str(row['OBJECTID']),
