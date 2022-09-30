@@ -25,4 +25,7 @@ data:
   HYDROGRAPHY_AQUIFER: https://metadados.snirh.gov.br/geonetwork/srv/api/records/3ec60e4f-85ea-4ba7-a90c-734b57594f90/attachments/GEOFT_SISTEMA_AQUIFERO_AFLORANTE.zip
   HYDROGRAPHY_IRRIGATED_AREAS: http://obahia.dea.ufv.br/geoserver/wfs?format_options=charset%3AUTF-8&typename=geonode%3Aareas_irrigadas_codevasf&outputFormat=SHAPE-ZIP&version=1.0.0&service=WFS&request=GetFeature&access_token=4d517073880d11ecb7ecd094666d597c
   HYDROGRAPHY_CENTER_PIVOTS: http://obahia.dea.ufv.br/geoserver/wfs?format_options=charset%3AUTF-8&typename=geonode%3Apivoscentrais2020&outputFormat=SHAPE-ZIP&version=1.0.0&service=WFS&request=GetFeature&access_token=6fbc5f49880b11ecb7ecd094666d597c
+  HYDROGRAPHY_CARINHANHA_BASIN=http://obahia.dea.ufv.br/geoserver/wfs?format_options=charset%3AUTF-8&typename=geonode%3Abaciariocarinhanha&outputFormat=SHAPE-ZIP&version=1.0.0&service=WFS&request=GetFeature&access_token=db6f917d3ff511edb568d094666d597c
+  HYDROGRAPHY_CORRENTE_BASIN=http://obahia.dea.ufv.br/geoserver/wfs?format_options=charset%3AUTF-8&typename=geonode%3Abaciariocorrente&outputFormat=SHAPE-ZIP&version=1.0.0&service=WFS&request=GetFeature&access_token=4ebfe9c53ff611edb568d094666d597c
+  
   RISK_FIRE: https://queimadas.dgi.inpe.br/home/download?id=focos_brasil&time=48h&outputFormat=csv&utm_source=landing-page&utm_medium=landing-page&utm_campaign=dados-abertos&utm_content=focos_brasil_48h

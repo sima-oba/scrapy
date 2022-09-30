@@ -207,3 +207,24 @@ def center_pivots(url):
         data['geometry'] = mapping(data['geometry'])
 
         publisher.publish('PIVOT', data)
+
+def carinhanha_basin(url):
+    df = _extract_shp(url, '/tmp/carinhanha')
+
+    for row in df.iterrows():
+        data = row[1].to_dict()
+        data['geometry'] = mapping(data['geometry'])
+
+        #TODO: nome do tópico
+        publisher.publish("CARINHANHA_BASIN", data)
+
+def corrente_basin(url):
+    df = _extract_shp(url, '/tmp/corrente')
+
+    for row in df.iterrows():
+        data = row[1].to_dict()
+        data['geometry'] = mapping(data['geometry'])
+
+        #TODO: nome do tópico
+        publisher.publish('CORRENTE_BASIN', data)
+

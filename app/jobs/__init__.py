@@ -11,7 +11,8 @@ from . import (
     ibama,
     icmbio,
     incra,
-    seia
+    seia,
+    embrapa
 )
 
 from .ordinances import (
@@ -446,3 +447,30 @@ def set_up_jobs():
         ],
         trigger=CronTrigger(day_of_week='6', hour='2')
     )
+    
+    # TODO: ajustar agendamentos
+    scheduler.add_job(
+        id='CORRENTE_BASIN',
+        name='Bacia do Rio Corrente',
+        func=hydrography.corrente_basin,
+        args=[config['HYDROGRAPHY_CORRENTE_BASIN']],
+        trigger=CronTrigger(month='1', day='1', hour='11')
+    )
+
+    scheduler.add_job(
+        id='CARINHANHA_BASIN',
+        name='Bacia do Rio Carinhanha',
+        func=hydrography.carinhanha_basin,
+        args=[config['HYDROGRAPHY_CARINHANHA_BASIN']],
+        trigger=CronTrigger(month='1', day='1', hour='11')
+    )
+
+    scheduler.add_job(
+        id='MATOPIBA',
+        name='Delimitação do MATOPIBA',
+        func=embrapa.import_matopiba,
+        trigger=CronTrigger(month='1', day='1', hour='12')
+    )
+
+
+    
