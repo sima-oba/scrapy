@@ -24,7 +24,7 @@ class ICMBioImporter:
         options.add_argument('ignore-certificate-errors')
         options.add_argument('disable-dev-shm-usage')
         options.add_argument('disable-gpu')
-        # options.add_argument('headless')
+        options.add_argument('headless')
 
         self._driver = webdriver.Chrome(options=options)
         self._url = 'http://mapas.mma.gov.br/i3geo/datadownload.htm'
