@@ -1280,7 +1280,7 @@ def _import_date(search_date):
         URL_DOC = f'{URL}/apifront/portal/edicoes/publicacoes_ver_conteudo/{ids[i]}'
         print(f'{i}/{len(ids)}')
         try:
-            response = requests.get(URL_DOC, verify=False)
+            response = requests.get(URL_DOC, verify=False, timeout=120)
             soup = BeautifulSoup(response.text, "html.parser")
             pub = soup.find_all('p')
             for ordinance_text in pub:
