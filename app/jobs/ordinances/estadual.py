@@ -575,7 +575,7 @@ class text_processing:
             text_processing.labels[2]: process, 
             text_processing.labels[3]: search_date, 
             # TODO checar se há número de documento nesse tipo de portaria
-            text_processing.labels[4]: doc_number, 
+            # text_processing.labels[4]: doc_number, 
             text_processing.labels[5]: text_processing.issuer_name, 
             text_processing.labels[6]: text_processing.issuer, 
             text_processing.labels[7]: None, 
