@@ -45,7 +45,7 @@ def _extract_shp(url: str, folder: str) -> GeoDataFrame:
 
 
 def hydrography_vectors(url):
-    df = _extract_shp(url, '/tmp/hidrografia_ana')
+    df = geopandas.read_file(url, encoding='utf-8')
     df = df[df['geometry'].notna()]
     publisher.publish('HYDROGRAPHY', df)
 
