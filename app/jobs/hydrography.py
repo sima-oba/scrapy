@@ -76,7 +76,11 @@ def limit_n2(url):
 def limit_n4(url):
     df = _extract_shp(url, '/tmp/bacia_rio_grande')
     df = df[df['geometry'].notna()]
-    publisher.publish('BASIN_RIO_GRANDE', df)
+
+    for row in df.iterrows():
+        data = row[1].to_dict()
+        data['geometry'] = mapping(data['geometry'])
+        publisher.publish('BASIN_RIO_GRANDE', data)
 
 
 def limit_n5(url):
