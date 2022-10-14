@@ -46,7 +46,7 @@ def _extract_shp(url: str, folder: str) -> GeoDataFrame:
 
 def hydrography_vectors(url):
     df = _extract_shp(url, '/tmp/hidrografia_ana')
-    publisher.publish('HYDROGRAPHY_ANA', df)
+    publisher.publish('HYDROGRAPHY', df)
 
 
 def limit_n1(url):
