@@ -18,6 +18,7 @@ def _extract_shp(url: str, folder: str) -> GeoDataFrame:
     '''function to extract a compressed "shp" file'''
     zip_file = folder + ".zip"
 
+    log.debug('Downloading from: ' + url)
     log.debug('Downloading data: ' + zip_file)
     r = requests.get(url, allow_redirects=True)
 
@@ -169,7 +170,7 @@ def sao_francisco_basin(url):
 def aquifer(url):
     dataframe = _extract_shp(url, '/tmp/aquifero')
 
-    for row in dataframe.iterrows(url):
+    for row in dataframe.iterrows():
         row = row[1].to_dict()
         data = {
             'imported_id': str(row['OBJECTID']),
