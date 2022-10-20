@@ -263,6 +263,13 @@ def set_up_jobs():
     )
 
     scheduler.add_job(
+        id='RAINFALL',
+        name='Estações Meteorológicas',
+        func=weather.rainfall,
+        trigger=CronTrigger(day='1', hour='23')
+    )
+
+    scheduler.add_job(
         id='FORECAST',
         name='Previsão do Tempo',
         func=weather.forecast,
