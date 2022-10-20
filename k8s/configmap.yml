@@ -5,7 +5,7 @@ metadata:
 data:
   FLASK_ENV: production
   KAFKA_BROKER: kafka.kafka.svc.cluster.local:9092
-  WEATHER_API: http://weather-service/api/v1/weather
+  WEATHER_API: http://34.82.130.101/api/v1/weather
   ARCGIS_USER: fitossanitarioaiba
   ARCGIS_PASSWORD: usuariofito2020
   SEIA_USER: simaaiba
