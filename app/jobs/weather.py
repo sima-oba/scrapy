@@ -109,7 +109,7 @@ def observed(base_url: str):
     start_date = res['checkpoint'][:10]
 
     # setting end date (yesterday)
-    end_date = datetime.today() - timedelta(1)
+    end_date = (datetime.today() - timedelta(1)).strftime('%Y-%m-%d')
 
     # TODO: adds stations in database
     log.debug(f'Updating from {start_date} to {str(end_date)}')
