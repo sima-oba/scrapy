@@ -575,7 +575,7 @@ class text_processing:
             text_processing.labels[2]: process, 
             text_processing.labels[3]: search_date, 
             # TODO checar se há número de documento nesse tipo de portaria
-            text_processing.labels[4]: doc_number, 
+            # text_processing.labels[4]: doc_number, 
             text_processing.labels[5]: text_processing.issuer_name, 
             text_processing.labels[6]: text_processing.issuer, 
             text_processing.labels[7]: None, 
@@ -1280,7 +1280,7 @@ def _import_date(search_date):
         URL_DOC = f'{URL}/apifront/portal/edicoes/publicacoes_ver_conteudo/{ids[i]}'
         print(f'{i}/{len(ids)}')
         try:
-            response = requests.get(URL_DOC, verify=False)
+            response = requests.get(URL_DOC, verify=False, timeout=120)
             soup = BeautifulSoup(response.text, "html.parser")
             pub = soup.find_all('p')
             for ordinance_text in pub:
