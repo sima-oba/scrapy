@@ -175,8 +175,10 @@ def sao_francisco_basin(url):
 
 def aquifer(url):
     dataframe = _extract_shp(url, '/tmp/aquifero')
+    series = dataframe.simplify(0.005)
 
     for row in dataframe.iterrows():
+        index, data = row
         row = row[1].to_dict()
         data = {
             'imported_id': str(row['OBJECTID']),
@@ -184,7 +186,7 @@ def aquifer(url):
             'name': row['SAA_NM_AQU'],
             'area': row['SHAPE_AREA'],
             'length': row['SHAPE_LEN'],
-            'geometry': mapping(row['geometry'])
+            'geometry': mapping(series[index])
         }
         publisher.publish('AQUIFER', data)
 
