@@ -19,7 +19,7 @@ URL = "https://dool.egba.ba.gov.br"
 #  
 def busca_id(search_date):
     URL_BUSCA = f"{URL}/apifront/portal/edicoes/edicoes_from_data/{search_date}.json"
-    response = requests.get(URL_BUSCA, verify=False)
+    response = requests.get(URL_BUSCA, verify=False, timeout=120)
 
     if(response.status_code == 200):
         response_id = []
@@ -1280,7 +1280,7 @@ def _import_date(search_date):
         URL_DOC = f'{URL}/apifront/portal/edicoes/publicacoes_ver_conteudo/{ids[i]}'
         print(f'{i}/{len(ids)}')
         try:
-            response = requests.get(URL_DOC, verify=False, timeout=120)
+            response = requests.get(URL_DOC, verify=False, timeout=30)
             soup = BeautifulSoup(response.text, "html.parser")
             pub = soup.find_all('p')
             for ordinance_text in pub:
