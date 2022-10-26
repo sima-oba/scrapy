@@ -77,14 +77,15 @@ def _import():
         for doc in docs:
             try:
                 log.debug(f'Searching "{doc}"')
-                select = Select(driver.find_element_by_id('selectshp'))
+                select = Select(driver.find_element(By.ID, 'selectshp'))
                 select.select_by_visible_text(doc)
 
-                select = Select(driver.find_element_by_id('selectuf'))
+                select = Select(driver.find_element(By.ID, 'selectuf'))
                 select.select_by_visible_text('Bahia')
 
-                driver.find_element_by_xpath("//button[@id='enviar']").click()
-                link = driver.find_elements_by_xpath(
+                driver.find_element(By.XPATH, "//button[@id='enviar']").click()
+                link = driver.find_elements(
+                    By.XPATH,
                     "//a"
                 )[0].get_attribute('href')
 

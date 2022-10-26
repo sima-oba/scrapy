@@ -104,15 +104,15 @@ def climate_risk():
 
         time.sleep(60)
 
-        uf_list = driver.find_element_by_class_name('Document_LB2599')
-        uf_list.find_element_by_css_selector(
+        uf_list = driver.find_element(By.CLASS_NAME, 'Document_LB2599')
+        uf_list.find_element(By.CSS_SELECTOR, 
             'div:nth-child(2) div:nth-child(1) div:nth-child(1) '
             'div:nth-child(5)'
         ).click()
 
         time.sleep(60)
 
-        driver.find_element_by_css_selector(
+        driver.find_element(By.CSS_SELECTOR, 
             '[title="Tabela Detalhada"] [title="Enviar para Excel"]'
         ).click()
 

@@ -38,7 +38,7 @@ def arcgis(username: str, password: str):
     }
     options = webdriver.ChromeOptions()
     options.add_experimental_option("prefs", prefs)
-    options.add_argument('headless')
+    # options.add_argument('headless')
     options.add_argument('disable-dev-shm-usage')
     options.add_argument('disable-gpu')
     driver = webdriver.Chrome(options=options)
@@ -48,9 +48,9 @@ def arcgis(username: str, password: str):
         (By.CLASS_NAME, "content-wrap")
     ))
 
-    login_textbox = driver.find_element_by_id('user_username')
-    pw_textbox = driver.find_element_by_id('user_password')
-    ent_button = driver.find_element_by_id('signIn')
+    login_textbox = driver.find_element(By.ID, 'user_username')
+    pw_textbox = driver.find_element(By.ID, 'user_password')
+    ent_button = driver.find_element(By.ID, 'signIn')
 
     login_textbox.send_keys(username)
     pw_textbox.send_keys(password)
@@ -144,7 +144,7 @@ def phytosanitary():  # noqa: max-complexity: 12
     labels = ['date', 'link', 'file']
 
     options = webdriver.ChromeOptions()
-    options.add_argument('headless')
+    # options.add_argument('headless')
     options.add_argument('window-size=1024x768')
     options.add_argument('disable-dev-shm-usage')
     options.add_argument('disable-gpu')
@@ -165,7 +165,8 @@ def phytosanitary():  # noqa: max-complexity: 12
             link = ""
             is_found = False
 
-            nav_page = driver.find_elements_by_xpath(
+            nav_page = driver.find_elements(
+                By.XPATH,
                 "//span[@class='pagination-button']"
             )
             has_next = True
@@ -174,12 +175,14 @@ def phytosanitary():  # noqa: max-complexity: 12
             while has_next and not is_found:
                 log.debug(f'Seção {s} - Página {pagina}')
                 pagina += 1
-                materias = driver.find_elements_by_xpath(
+                materias = driver.find_elements(
+                    By.XPATH,
                     "//li[@class='materia-link']")
                 i = 0
 
                 while i < len(materias) and not is_found:
-                    materias = driver.find_elements_by_xpath(
+                    materias = driver.find_elements(
+                        By.XPATH,
                         "//li[@class='materia-link']")
 
                     if len(
@@ -193,7 +196,7 @@ def phytosanitary():  # noqa: max-complexity: 12
                             'Verificar se é o documento de interesse'
                         )
 
-                        link = materias[i].find_element_by_tag_name(
+                        link = materias[i].find_element(By.TAG_NAME, 
                             'a').get_attribute("href")
 
                         driver.execute_script("window.open('');")
@@ -204,16 +207,15 @@ def phytosanitary():  # noqa: max-complexity: 12
                             (By.CLASS_NAME, "texto-dou")
                         ))
 
-                        if len(re.findall(grant_type.lower(), driver.find_element_by_xpath("//div[@class='texto-dou']").get_attribute("innerHTML").lower())) > 0:  # noqa: E501
+                        if len(re.findall(grant_type.lower(), driver.find_element(By.XPATH, "//div[@class='texto-dou']").get_attribute("innerHTML").lower())) > 0:  # noqa: E501
                             is_found = False
                             log.debug(f'{i} encontrado {link}')
                             link_final.append(link)
 
-                            link_pdf = driver.find_element_by_id('versao-certificada').get_attribute("href")  # noqa: E501
+                            link_pdf = driver.find_element(By.ID, 'versao-certificada').get_attribute("href")  # noqa: E501
                             driver.get(link_pdf)
 
-                            # find_elements_by_xpath("//body").find_elements_by_xpath("//html")
-                            baixar = driver.find_elements_by_xpath("//frame")[1].get_attribute("src")  # noqa: E501
+                            baixar = driver.find_elements(By.XPATH,"//frame")[1].get_attribute("src")  # noqa: E501
                             # a = requests.get(baixar)
                             # pdf_para_envio = base64.b64encode(a.content)
 
@@ -230,7 +232,8 @@ def phytosanitary():  # noqa: max-complexity: 12
 
                     i += 1
 
-                nav_page = driver.find_elements_by_xpath(
+                nav_page = driver.find_elements(
+                    By.XPATH,
                     "//span[@class='pagination-button']")
 
                 try:

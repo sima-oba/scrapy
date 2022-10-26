@@ -522,7 +522,11 @@ def _import_date(search_date):
         type_list[13]: 'condition_review'              
     }
 
-    files, links, folder = pdfutils.dom_angical(search_date)
+    try:
+        files, links, folder = pdfutils.dom_angical(search_date)
+    except FileNotFoundError as e:
+        print('erro')
+        return
 
     regs = []
 

@@ -7,6 +7,7 @@ import re
 from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
 
 from .. import publisher
 from . import utils
@@ -55,7 +56,7 @@ def _import():
         driver.get(url)
 
         log.debug('Downloading...')
-        element = driver.find_element_by_xpath('//*[@id="download"]/a')
+        element = driver.find_element(By.XPATH, '//*[@id="download"]/a')
         ActionChains(driver).move_to_element(element).click().perform()
 
         arquivos = glob.glob(f'{tmp_dir}areas*.zip')

@@ -19,7 +19,7 @@ URL = "https://dool.egba.ba.gov.br"
 #  
 def busca_id(search_date):
     URL_BUSCA = f"{URL}/apifront/portal/edicoes/edicoes_from_data/{search_date}.json"
-    response = requests.get(URL_BUSCA, verify=False)
+    response = requests.get(URL_BUSCA, verify=False, timeout=120)
 
     if(response.status_code == 200):
         response_id = []
@@ -91,7 +91,7 @@ class text_processing:
             area = None
 
         capture = re.findall(text_processing.mask_capture, ordinance_text)[0][9:]
-        issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[0][13:]
+        issuer_name = text_processing.mask_issuer_name
         try:
             lat = re.findall(text_processing.mask_lat, ordinance_text)[0][4:]
             longitude = re.findall(text_processing.mask_longitude, ordinance_text)[0][5:]
@@ -133,7 +133,7 @@ class text_processing:
         except Exception as e:
             area = None
         capture = re.findall(text_processing.mask_capture, ordinance_text)[0][9:]
-        issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[0][13:]
+        issuer_name = text_processing.mask_issuer_name
         lat = re.findall(text_processing.mask_lat, ordinance_text)[0]
         longitude = re.findall(text_processing.mask_longitude, ordinance_text)[0]
         n_ordinance = str(f'{re.findall(text_processing.mask_ordinance_number, ordinance_text)[0]}/{re.findall(text_processing.mask_year, ordinance_text)[0]}')
@@ -173,7 +173,7 @@ class text_processing:
         except Exception as e:
             area = None
         capture = re.findall(text_processing.mask_capture, ordinance_text)[0][9:]
-        issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[0][13:]
+        issuer_name = text_processing.mask_issuer_name
         lat = re.findall(text_processing.mask_lat, ordinance_text)[0]
         longitude = re.findall(text_processing.mask_longitude, ordinance_text)[0]
         n_ordinance = str(f'{re.findall(text_processing.mask_ordinance_number, ordinance_text)[0]}/{re.findall(text_processing.mask_year, ordinance_text)[0]}')
@@ -304,11 +304,7 @@ class text_processing:
             operation = None
         
         deadline = re.findall(text_processing.mask_prazo, ordinance_text)[0][9:]
-        
-        try:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[1][13:]
-        except Exception as e:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[0][13:]
+        issuer_name = text_processing.mask_issuer_name
 
         reg = json.loads(json.dumps({
             text_processing.labels[0]: ordinance_type.OPERATION_LICENSE, 
@@ -370,11 +366,8 @@ class text_processing:
             operation = re.findall(mask_operation, ordinance_text)[0][5:].replace('_','-')
         except Exception:
             operation = None
-
-        try:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[1][13:]
-        except Exception as e:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[0][13:]
+        
+        issuer_name = text_processing.mask_issuer_name
             
         reg = json.loads(json.dumps({
             text_processing.labels[0]: ordinance_type.PRELIMINARY_LICENSE, 
@@ -418,10 +411,7 @@ class text_processing:
         except Exception:
             longitude = None
 
-        try:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[1][13:]
-        except Exception as e:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[0][13:]
+        issuer_name = text_processing.mask_issuer_name
             
         reg = json.loads(json.dumps({
             text_processing.labels[0]: ordinance_type.REGULARIZATION_LICENSE, 
@@ -458,10 +448,7 @@ class text_processing:
         except Exception:
             operation = None
 
-        try:
-            issuer_name = re.findall(text_processing.issuer_name, ordinance_text)[1][13:]
-        except Exception as e:
-            issuer_name = re.findall(text_processing.issuer_name, ordinance_text)[0][13:]
+        issuer_name = text_processing.mask_issuer_name
             
         reg = json.loads(json.dumps({
             text_processing.labels[0]: ordinance_type.UNIFIED_LICENSE, 
@@ -594,7 +581,7 @@ class text_processing:
         process = re.findall(text_processing.mask_process, ordinance_text)[0].replace('_', '-')
         doc_number = re.findall(text_processing.mask_cpf, ordinance_text)[0].replace('_', '-')
         deadline = re.findall(text_processing.mask_prazo, ordinance_text)[0].replace('_', '-')
-        issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[-1][13:]
+        issuer_name = issuer_name = text_processing.mask_issuer_name
         area = re.findall(text_processing.mask_area, ordinance_text)[0]
 
         reg = json.loads(json.dumps({
@@ -619,7 +606,7 @@ class text_processing:
     def ownership_transfer(ordinance_text, search_date, link):
         mask_grant_type = r'a titularidade .* concedida'
         
-        issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[0][13:]
+        issuer_name = issuer_name = text_processing.mask_issuer_name
         n_ordinance = f'{re.findall(text_processing.mask_ordinance_number, ordinance_text)[0]}/{re.findall(text_processing.mask_year, ordinance_text)[0]}'
         process = re.findall(text_processing.mask_process, ordinance_text)[0].replace('_', '-')
         doc_number = re.findall(text_processing.mask_cpf, ordinance_text)
@@ -649,10 +636,7 @@ class text_processing:
         n_ordinance = f'{re.findall(text_processing.mask_ordinance_number, ordinance_text)[0]}/{re.findall(text_processing.mask_year, ordinance_text)[0]}'
         process = re.findall(text_processing.mask_process, ordinance_text)[0].replace('_', '-')
         doc_number = re.findall(text_processing.mask_cpf, ordinance_text)[0].replace('_', '-')
-        try:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[1][13:]
-        except Exception as e:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[0][13:]
+        issuer_name = text_processing.mask_issuer_name
         
         reg = json.loads(json.dumps({
             text_processing.labels[0]: ordinance_type.FOREST_REPLACEMENT_CREDIT, 
@@ -674,10 +658,7 @@ class text_processing:
         process = re.findall(text_processing.mask_process, ordinance_text)[0].replace('_', '-')
         doc_number = re.findall(text_processing.mask_cpf, ordinance_text)[0].replace('_', '-')
         deadline = re.findall(text_processing.mask_prazo, ordinance_text)[0].replace('_', '-')
-        try:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[1][13:]
-        except Exception as e:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[0][13:]
+        issuer_name = text_processing.mask_issuer_name
 
         reg = json.loads(json.dumps({
             text_processing.labels[0]: ordinance_type.FOREST_VOLUME_CREDIT, 
@@ -699,10 +680,7 @@ class text_processing:
         process = re.findall(text_processing.mask_process, ordinance_text)[0].replace('_', '-')
         doc_number = re.findall(text_processing.mask_cpf, ordinance_text)[0].replace('_', '-')
         deadline = re.findall(text_processing.mask_prazo, ordinance_text)[0].replace('_', '-')
-        try:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[1][13:]
-        except Exception as e:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[0][13:]
+        issuer_name = text_processing.mask_issuer_name
 
         reg = json.loads(json.dumps({
             text_processing.labels[0]: ordinance_type.FOREST_VOLUME_RECOGNITION, 
@@ -751,10 +729,7 @@ class text_processing:
         process = re.findall(text_processing.mask_process, ordinance_text)[0].replace('_', '-')
         doc_number = re.findall(text_processing.mask_cpf, ordinance_text)[0].replace('_', '-')
         deadline = re.findall(text_processing.mask_prazo, ordinance_text)[0].replace('_', '-')
-        try:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[1][13:]
-        except Exception as e:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[0][13:]
+        issuer_name = text_processing.mask_issuer_name
                     
         try:
             area = re.findall(text_processing.mask_area, ordinance_text)[0]
@@ -801,10 +776,7 @@ class text_processing:
         doc_number = re.findall(text_processing.mask_cpf, ordinance_text)[0].replace('_', '-')
         deadline = re.findall(mask_prazo, ordinance_text)[0].replace('_', '-')
         obs = re.findall(mask_operation, ordinance_text)[0][5:-1].replace('_', '-')
-        try:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[1][13:]
-        except Exception as e:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[0][13:]
+        issuer_name = text_processing.mask_issuer_name
 
         reg = json.loads(json.dumps({
             text_processing.labels[0]: ordinance_type.ENVIRONMENTAL_AUTHORIZATION, 
@@ -905,10 +877,7 @@ class text_processing:
         except Exception as e:
             long = None
 
-        try:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[1][13:]
-        except Exception as e:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[0][13:]	
+        issuer_name = text_processing.mask_issuer_name	
         
         reg = json.loads(json.dumps({
             text_processing.labels[0]: ordinance_type.LICENSE_REVOCATION, 
@@ -946,10 +915,7 @@ class text_processing:
             lat = None
             longitude = None
 
-        try:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[1][13:]
-        except Exception as e:
-            issuer_name = "not found"
+        issuer_name = text_processing.mask_issuer_name
 
         for i2 in range(len(re.findall(grant_type, ordinance_text.upper()))):
             try:
@@ -997,10 +963,7 @@ class text_processing:
         except Exception as e:
             area = None
 
-        try:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[0][13:]
-        except Exception as e:
-            issuer_name = None
+        issuer_name = text_processing.mask_issuer_name
             
         try:
             lat = re.findall(text_processing.mask_lat, ordinance_text)[0]
@@ -1053,11 +1016,7 @@ class text_processing:
         doc_number = re.findall(text_processing.mask_cpf, ordinance_text)[0]
         
         authorization_number = re.findall(mask_authorization_number, ordinance_text)[0].replace('_', '-').replace(',', '')
-        
-        try:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[0][13:]
-        except Exception as e:
-            issuer_name = None
+        issuer_name = text_processing.mask_issuer_name
         
         reg = json.loads(json.dumps({
             text_processing.labels[0]: ordinance_type.SPECIAL_PROCEDURE, 
@@ -1091,10 +1050,7 @@ class text_processing:
         except Exception as e:
             area = None
 
-        try:
-            issuer_name = re.findall(text_processing.mask_issuer_name, ordinance_text)[0][13:]
-        except Exception as e:
-            issuer_name = None
+        issuer_name = text_processing.mask_issuer_name
             
         try:
             lat = re.findall(text_processing.mask_lat, ordinance_text)[0]
@@ -1280,7 +1236,7 @@ def _import_date(search_date):
         URL_DOC = f'{URL}/apifront/portal/edicoes/publicacoes_ver_conteudo/{ids[i]}'
         print(f'{i}/{len(ids)}')
         try:
-            response = requests.get(URL_DOC, verify=False, timeout=120)
+            response = requests.get(URL_DOC, verify=False, timeout=30)
             soup = BeautifulSoup(response.text, "html.parser")
             pub = soup.find_all('p')
             for ordinance_text in pub:
