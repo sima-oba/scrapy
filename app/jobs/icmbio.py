@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 import geopandas
+from datetime import datetime
 from shapely.geometry import mapping
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -83,15 +84,13 @@ class ICMBioImporter:
         element.click()
 
 
-    def get_conservation_units(self):
+    def get_conservation_units(self) -> geopandas.GeoDataFrame:
         log.debug('Getting "Unidades de conservação" shapefile')
         selector = 'td[title=ucstodas]'
         self._wait_element((By.CSS_SELECTOR, selector))
         
         element = self._driver.find_element(By.CSS_SELECTOR, selector)
-        self._actions.move_to_element(element)
-        self._actions.click()
-        self._actions.perform()
+        element.click()
         
         columns = [
             'imported_id',
@@ -107,7 +106,12 @@ class ICMBioImporter:
             'geometry'
         ]
 
-        df = self._download_shape('unidades_de_conservacao')
+        df = self._download_shape(
+            'unidades_de_conservacao',
+            timeout=600,
+            encoding='Windows-1252'
+        )
+        
         df.rename(columns={
             df.columns[0]: columns[0],
             df.columns[1]: columns[1],
@@ -123,15 +127,13 @@ class ICMBioImporter:
         
         return df[columns]
 
-    def get_indigenous_land(self):
+    def get_indigenous_land(self) -> geopandas.GeoDataFrame:
         log.debug('Getting "Terras indígenas" shapefile')
         selector = 'td[title=indi2010]'
         self._wait_element((By.CSS_SELECTOR, selector))
         
         element = self._driver.find_element(By.CSS_SELECTOR, selector)
-        self._actions.move_to_element(element)
-        self._actions.click()
-        self._actions.perform()
+        element.click()
         
         columns = [
             'imported_id',
@@ -188,8 +190,7 @@ class ICMBioImporter:
             'geometry'
         ]
 
-        df = self._download_shape('sitios_geologicos')
-        print(df.columns)
+        df = self._download_shape('sitios_geologicos', encoding='Windows-1252')
         df.rename(columns={
             df.columns[0]: columns[0],
             df.columns[2]: columns[1],
@@ -228,7 +229,7 @@ class ICMBioImporter:
             'geometry'
         ]
 
-        df = self._download_shape('geoparques')
+        df = self._download_shape('geoparques', encoding='Windows-1252')
         df.rename(columns={
             df.columns[0]: columns[0],
             df.columns[1]: columns[1],
@@ -241,7 +242,7 @@ class ICMBioImporter:
         
         return df[columns]
 
-    def get_corridors(self):
+    def get_corridors(self) -> geopandas.GeoDataFrame:
         log.debug('Getting "Corredores" shapefile')
         selector = 'td[title=corredores_ppg7]'
         self._wait_element((By.CSS_SELECTOR, selector))
@@ -250,7 +251,7 @@ class ICMBioImporter:
 
         columns = ['imported_id', 'name', 'geometry']
 
-        df = self._download_shape('corredores')
+        df = self._download_shape('corredores', encoding='Windows-1252')
         df.rename(columns={
             df.columns[0]: columns[0],
             df.columns[1]: columns[1]
@@ -258,7 +259,7 @@ class ICMBioImporter:
         
         return df[columns]
 
-    def get_atlantic_forest_law(self):
+    def get_atlantic_forest_law(self) -> geopandas.GeoDataFrame:
         log.debug('Getting "Mata atlantica" shapefile')
         selector = 'td[title=mata_atlantica11428]'
         self._wait_element((By.CSS_SELECTOR, selector))
@@ -283,14 +284,14 @@ class ICMBioImporter:
         
         return df[columns]
 
-    def get_bioma(self):
+    def get_bioma(self) -> geopandas.GeoDataFrame:
         log.debug('Getting "Biomas" shapefile')
         selector = 'td[title=bioma]'
         
         element = self._driver.find_element(By.CSS_SELECTOR, selector)
         element.click()
 
-        df = self._download_shape('bioma')
+        df = self._download_shape('bioma', encoding='Windows-1252')
         
         columns = [
             'ID_0', 
@@ -319,12 +320,12 @@ class ICMBioImporter:
         df = self._download_shape('vegetacao')
         
         columns = [
-            'ID', 
-            'NOME', 
-            'BIOMA',
-            'DESCRICAO',
+            'imported_id', 
+            'name', 
+            'type',
+            'description',
             'SIGLA',
-            'FONTE',
+            'source',
             'geometry'
         ]
 
@@ -338,7 +339,7 @@ class ICMBioImporter:
             df.columns[6]: columns[6]
         }, inplace=True)
         
-        df = df[df["BIOMA"] == "Cerrado"]
+        df = df[df["type"] == "Cerrado"]
         
         return df[columns]
 
@@ -356,9 +357,10 @@ class ICMBioImporter:
         condition = EC.presence_of_element_located(locator)
         WebDriverWait(self._driver, timeout).until(condition)
 
-    def _download_shape(self, shape_name, encoding='utf8'):
+    def _download_shape(self, shape_name, encoding='utf8', timeout=120):
         self._wait_element(
-            (By.CSS_SELECTOR, '#panellistaarquivos a[href$=shp]')
+            (By.CSS_SELECTOR, '#panellistaarquivos a[href$=shp]'),
+            timeout=timeout
         )
 
         shp_file = f'{shape_name}.shp'
@@ -395,10 +397,14 @@ class ICMBioImporter:
         return geopandas.read_file(path, encoding=encoding)
 
 
-def _publish(topic, reg):
-    payload = reg[1].to_dict()
-    payload['geometry'] = mapping(payload['geometry'])
-    key = payload['imported_id']
+def _publish(topic, reg, geometry=None):
+    payload = reg.to_dict()
+    key = payload.get('imported_id', datetime.utcnow().isoformat())
+
+    if geometry is None:
+        payload['geometry'] = mapping(payload['geometry'])
+    else:
+        payload['geometry'] = mapping(geometry)
 
     publisher.publish(topic, payload, key)
 
@@ -408,61 +414,69 @@ def icmbio():
     importer.set_up()
     success = 0
 
-    for reg in importer.get_corridors().iterrows():
+    for _, reg in importer.get_corridors().iterrows():
         try:
             _publish('ICMBIO_CORRIDOR', reg)
             success += 1
         except Exception as e:
-            log.error(e)
+            log.error(e, exc_info=True)
 
-    for reg in importer.get_geo_sites().iterrows():
+    for _, reg in importer.get_geo_sites().iterrows():
         try:
             _publish('ICMBIO_SITE', reg)
             success += 1
         except Exception as e:
-            log.error(e)
+            log.error(e, exc_info=True)
 
-    for reg in importer.get_conservation_units().iterrows():
+    df = importer.get_conservation_units()
+    series = df.simplify(0.00005)
+    for index, reg in df.iterrows():
         try:
-            _publish('ICMBIO_CONSERVATION_UNIT', reg)
+            _publish('ICMBIO_CONSERVATION_UNIT', reg, series[index])
             success += 1
         except Exception as e:
             log.error(e)
 
-    for reg in importer.get_indigenous_land().iterrows():
+    df = importer.get_indigenous_land()
+    series = df.simplify(0.005)
+    for index, reg in df.iterrows():
         try:
-            _publish('ICMBIO_INDIGENOUS_LAND', reg)
+            _publish('ICMBIO_INDIGENOUS_LAND', reg, series[index])
             success += 1
         except Exception as e:
-            log.error(e)
+            log.error(e, exc_info=True)
 
-    for reg in importer.get_geo_parks().iterrows():
+    for _, reg in importer.get_geo_parks().iterrows():
         try:
             _publish('ICMBIO_GEOPARK', reg)
             success += 1
         except Exception as e:
-            log.error(e)
+            log.error(e, exc_info=True)
 
-    for reg in importer.get_atlantic_forest_law().iterrows():
+    for _, reg in importer.get_atlantic_forest_law().iterrows():
         try:
             _publish('ICMBIO_ATLANTIC_FOREST_LAW', reg)
             success += 1
         except Exception as e:
-            log.error(e)
+            log.error(e, exc_info=True)
 
-    for reg in importer.get_bioma().iterrows():
+    df = importer.get_bioma()
+    series = df.simplify(0.0005)
+    for index, reg in df.iterrows():
         try:
-            _publish('ICMBIO_ATLANTIC_FOREST_LAW', reg)
+            _publish('BIOME', reg, series[index])
             success += 1
         except Exception as e:
-            log.error(e)
+            log.error(e, exc_info=True)
 
-    for reg in importer.get_cerrado_vegetation().iterrows():
+    df = importer.get_cerrado_vegetation()
+    series = df.simplify(0.005)
+    for index, reg in df.iterrows():
         try:
-            _publish('CERRADO VEGETATION', reg)
+            _publish('VEGETATION', reg, series[index])
             success += 1
         except Exception as e:
-            log.error(e)
+            log.error(e, exc_info=True)
 
     importer.tear_down()
     log.debug(f'{success} stored')
