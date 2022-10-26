@@ -1706,7 +1706,9 @@ def dom_cristopolis(search_date):
     print("Acessing Cristópolis DOM")
     driver.get(url)
     # Ocultar janela de mensagem
-    driver.find_element(By.XPATH, '//*[@id="sgpb-popup-dialog-main-div-wrapper"]/div/img').click()
+    try:
+        driver.find_element(By.XPATH, '//*[@id="sgpb-popup-dialog-main-div-wrapper"]/div/img').click()
+    except: pass
     # seleciona o ano
     xpath_select = f'//*[@id="_f_ano"]'
 
@@ -1714,7 +1716,6 @@ def dom_cristopolis(search_date):
     select.select_by_visible_text(str(search_date.year))
 
     driver.find_element(By.XPATH, '//*[@id="doem-container"]/div/form/div[2]/div[2]/div/button').click()
-    driver.find_element(By.XPATH, '//*[@id="sgpb-popup-dialog-main-div-wrapper"]/div/img').click()
 
     # encontra as datas
     xpath = '//div[@class="panel panel-default"]'
