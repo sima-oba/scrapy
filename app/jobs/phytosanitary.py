@@ -38,7 +38,7 @@ def arcgis(username: str, password: str):
     }
     options = webdriver.ChromeOptions()
     options.add_experimental_option("prefs", prefs)
-    # options.add_argument('headless')
+    options.add_argument('headless')
     options.add_argument('disable-dev-shm-usage')
     options.add_argument('disable-gpu')
     driver = webdriver.Chrome(options=options)
