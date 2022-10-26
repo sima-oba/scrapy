@@ -68,16 +68,16 @@ def _import():
         time.sleep(10)
 
         log.debug('Seleciona Bacia do Sao Francisco')
-        driver.find_element_by_css_selector(
+        driver.find_element(By.CSS_SELECTOR, 
             'div.checkBtn > '
             'div.jimu-icon.jimu-icon-down-arrow-8.checkBtnDownIcon'
         ).click()
 
-        driver.find_element_by_css_selector(
+        driver.find_element(By.CSS_SELECTOR, 
             '.jimu-multiple-items-list > div:nth-child(11)'
         ).click()
 
-        driver.find_element_by_class_name("btn-execute").click()
+        driver.find_element(By.CLASS_NAME, "btn-execute").click()
 
         WebDriverWait(driver, 600).until(EC.presence_of_element_located(
             (By.CLASS_NAME, "query-result-item-table")
