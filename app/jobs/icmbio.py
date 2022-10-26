@@ -56,41 +56,31 @@ class ICMBioImporter:
         self._wait_element((By.CSS_SELECTOR, 'td[title=cprmgeoparques]'))
         self._wait_element((By.CSS_SELECTOR, 'td[title=corredores_ppg7]'))
 
-
         # Expandir menu para biomas e vegetação
         # Ambiente físico e biodiversidade
         log.debug('Expanding menu "Ambiente físico e biodiversidade"')
         self._wait_element((By.ID, 'ygtvt15'), timeout=5)
         element = self._driver.find_element(By.XPATH, '//*[@id="ygtvt15"]/a')
-        self._actions.move_to_element(element)
-        self._actions.click()
-        self._actions.perform()
+        element.click()
 
         # Vegetação
         self._wait_element((By.ID, 'ygtvt42'), timeout=5)
         log.debug('Expanding menu "Vegetação"')
         element = self._driver.find_element(By.XPATH, '//*[@id="ygtvt42"]/a')
-        self._actions.move_to_element(element)
-        self._actions.click()
-        self._actions.perform()
+        element.click()
         self._wait_element((By.CSS_SELECTOR, 'td[title=vegetacao]'), 5)
 
         # Expandir menu para biomas para lei da mata atlantica
         log.debug('Expanding menu "Biomas"')
         self._wait_element((By.ID, 'ygtvt23'), timeout=5)
         element = self._driver.find_element(By.XPATH, '//*[@id="ygtvt23"]/a')
-        self._actions.move_to_element(element)
-        self._actions.click()
-        self._actions.perform()
         element.click()
 
         # Mata atlantica
         self._wait_element((By.ID, 'ygtvt50'), timeout=5)
         log.debug('Expanding menu "Mata Atlântica"')
         element = self._driver.find_element(By.XPATH, '//*[@id="ygtvt50"]/a')
-        self._actions.move_to_element(element)
-        self._actions.click()
-        self._actions.perform()
+        element.click()
 
 
     def get_conservation_units(self):
@@ -185,9 +175,7 @@ class ICMBioImporter:
         self._wait_element((By.CSS_SELECTOR, selector))
         
         element = self._driver.find_element(By.CSS_SELECTOR, selector)
-        self._actions.move_to_element(element)
-        self._actions.click()
-        self._actions.perform()
+        element.click()
         
         columns = [
             'imported_id',
@@ -201,6 +189,7 @@ class ICMBioImporter:
         ]
 
         df = self._download_shape('sitios_geologicos')
+        print(df.columns)
         df.rename(columns={
             df.columns[0]: columns[0],
             df.columns[2]: columns[1],
@@ -219,9 +208,7 @@ class ICMBioImporter:
         self._wait_element((By.CSS_SELECTOR, selector))
         
         element = self._driver.find_element(By.CSS_SELECTOR, selector)
-        self._actions.move_to_element(element)
-        self._actions.click()
-        self._actions.perform()
+        element.click()
         
         return self._download_shape('florestas_publicas')
 
@@ -259,9 +246,8 @@ class ICMBioImporter:
         selector = 'td[title=corredores_ppg7]'
         self._wait_element((By.CSS_SELECTOR, selector))
         element = self._driver.find_element(By.CSS_SELECTOR, selector)
-        self._actions.move_to_element(element)
-        self._actions.click()
-        self._actions.perform()
+        element.click()
+
         columns = ['imported_id', 'name', 'geometry']
 
         df = self._download_shape('corredores')
@@ -277,9 +263,7 @@ class ICMBioImporter:
         selector = 'td[title=mata_atlantica11428]'
         self._wait_element((By.CSS_SELECTOR, selector))
         element = self._driver.find_element(By.CSS_SELECTOR, selector)
-        self._actions.move_to_element(element)
-        self._actions.click()
-        self._actions.perform()
+        element.click()
 
         df = self._download_shape('mata_atlantica11428')
         
@@ -304,9 +288,7 @@ class ICMBioImporter:
         selector = 'td[title=bioma]'
         
         element = self._driver.find_element(By.CSS_SELECTOR, selector)
-        self._actions.move_to_element(element)
-        self._actions.click()
-        self._actions.perform()
+        element.click()
 
         df = self._download_shape('bioma')
         
@@ -332,9 +314,7 @@ class ICMBioImporter:
         self._wait_element((By.CSS_SELECTOR, selector))
         
         element = self._driver.find_element(By.CSS_SELECTOR, selector)
-        self._actions.move_to_element(element)
-        self._actions.click()
-        self._actions.perform()
+        element.click()
 
         df = self._download_shape('vegetacao')
         
@@ -364,7 +344,7 @@ class ICMBioImporter:
 
 
     def tear_down(self):
-        # self._driver.close()
+        self._driver.close()
         shutil.rmtree(self._download_dir)
 
     def _container_close(self):
@@ -452,6 +432,7 @@ def icmbio():
     for reg in importer.get_indigenous_land().iterrows():
         try:
             _publish('ICMBIO_INDIGENOUS_LAND', reg)
+            success += 1
         except Exception as e:
             log.error(e)
 
@@ -464,27 +445,21 @@ def icmbio():
 
     for reg in importer.get_atlantic_forest_law().iterrows():
         try:
-            # TODO: topico kafka para lei da mata
-            # _publish('ICMBIO_ATLANTIC_FOREST_LAW', reg)
-            log.debug(reg)
+            _publish('ICMBIO_ATLANTIC_FOREST_LAW', reg)
             success += 1
         except Exception as e:
             log.error(e)
 
     for reg in importer.get_bioma().iterrows():
         try:
-            # TODO: topico kafka para bioma
-            # _publish('ICMBIO_ATLANTIC_FOREST_LAW', reg)
-            log.debug(reg)
+            _publish('ICMBIO_ATLANTIC_FOREST_LAW', reg)
             success += 1
         except Exception as e:
             log.error(e)
 
     for reg in importer.get_cerrado_vegetation().iterrows():
         try:
-            # TODO: topico kafka para bioma
-            # _publish('CERRADO VEGETATION', reg)
-            log.debug(reg)
+            _publish('CERRADO VEGETATION', reg)
             success += 1
         except Exception as e:
             log.error(e)
