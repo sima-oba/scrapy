@@ -47,7 +47,12 @@ def _extract_shp(url: str, folder: str) -> GeoDataFrame:
 def hydrography_vectors(url):
     df = geopandas.read_file(url, encoding='utf-8')
     df = df[df['geometry'].notna()]
-    publisher.publish('HYDROGRAPHY', df)
+    series = df.simplify(0.0005)
+
+    for index, reg in df.iterrows():
+        data = reg.to_dict()
+        data['geometry'] = mapping(series[index])
+        publisher.publish('HYDROGRAPHY', data)
 
 
 def limit_n1(url):
@@ -69,26 +74,28 @@ def limit_n1(url):
 
 
 def limit_n2(url):
-    df = _extract_shp(url, '/tmp/limite_n2')
+    df = geopandas.read_file(url, encoding='utf-8')
     publisher.publish('LIMIT_LVL_2', df)
 
 
 def limit_n4(url):
-    df = _extract_shp(url, '/tmp/bacia_rio_grande')
+    df = geopandas.read_file(url, encoding='utf-8')
     df = df[df['geometry'].notna()]
+    series = df.simplify(0.005)
 
-    for row in df.iterrows():
-        data = row[1].to_dict()
-        data['geometry'] = mapping(data['geometry'])
+    for index, row in df.iterrows():
+        data = row.to_dict()
+        data['geometry'] = mapping(series[index])
         publisher.publish('BASIN_RIO_GRANDE', data)
 
 
 def limit_n5(url):
-    df = _extract_shp(url, '/tmp/area_de_contribuicao_nivel_5')
+    df = geopandas.read_file(url, encoding='utf-8')
+    series = df.simplify(0.0005)
 
-    for row in df.iterrows():
-        data = row[1].to_dict()
-        data['geometry'] = mapping(data['geometry'])
+    for index, reg in df.iterrows():
+        data = reg.to_dict()
+        data['geometry'] = mapping(series[index])
         publisher.publish('CONTRIB', data)
 
 
@@ -228,12 +235,11 @@ def carinhanha_basin(url):
         publisher.publish("CARINHANHA_BASIN", data)
 
 def corrente_basin(url):
-    df = _extract_shp(url, '/tmp/corrente')
+    df = geopandas.read_file(url, encoding='utf-8')
+    series = df.simplify(0.0005)
 
-    for row in df.iterrows():
-        data = row[1].to_dict()
-        data['geometry'] = mapping(data['geometry'])
-
-        #TODO: nome do tópico
+    for index, row in df.iterrows():
+        data = row.to_dict()
+        data['geometry'] = mapping(series[index])
         publisher.publish('CORRENTE_BASIN', data)
 
