@@ -150,94 +150,60 @@ def barreiras_dom(search_date):
 #  @ return: PDF filenames, download temp folder name
 #  TODO: portal modificado
 def lem_dom(s_date):
-    try:
-        print('Acessing LEM diary')
-        # s_date = '2021-04-30'
-        search_date = dt.strptime(s_date, '%Y-%m-%d')
-        url = f'http://luiseduardomagalhaes.ba.io.org.br/diarioOficial/index/469/{search_date.year}/-/-/-/-/-/-/-/-/-'
+    print('Acessing LEM diary')
+    # s_date = '2021-04-30'
+    search_date = dt.strptime(s_date, '%Y-%m-%d')
+    url = f'http://dom.imap.org.br/sitesMunicipios/imprensaOficial.cfm?varCodigo=469'
 
-        temp_folder = 'portarias-dom-lem/'
-        
-        options = webdriver.ChromeOptions()
-        options.add_argument('ignore-certificate-errors')
-        options.add_argument('headless')
-        options.add_argument('disable-dev-shm-usage')
-        options.add_argument('disable-gpu')
-        options.add_argument('window-size=1024x768')
-        profile = {#"plugins.plugins_list": [{"enabled": False, "name": "Chrome PDF Viewer"}], # Disable Chrome's PDF Viewer
-                "download.default_directory" : f"{os.getcwd()}/{temp_folder}" , 
-                "download.extensions_to_open": "applications/pdf",
-                "download.prompt_for_download": False, #To auto download the file
-                "download.directory_upgrade": True,
-                "plugins.always_open_pdf_externally": True #It will not show PDF directly in chrome
-                }
-        options.add_experimental_option("prefs", profile)
-        driver = webdriver.Chrome(options=options)
-        driver.get(url)
+    temp_folder = 'portarias-dom-lem/'
+    utils.create_temp_folder(temp_folder)
+    
+    options = webdriver.ChromeOptions()
+    options.add_argument('ignore-certificate-errors')
+    # options.add_argument('headless')
+    options.add_argument('disable-dev-shm-usage')
+    options.add_argument('disable-gpu')
+    options.add_argument('window-size=1024x768')
+    profile = {#"plugins.plugins_list": [{"enabled": False, "name": "Chrome PDF Viewer"}], # Disable Chrome's PDF Viewer
+            "download.default_directory" : f"{os.getcwd()}/{temp_folder}" , 
+            "download.extensions_to_open": "applications/pdf",
+            "download.prompt_for_download": False, #To auto download the file
+            "download.directory_upgrade": True,
+            "plugins.always_open_pdf_externally": True #It will not show PDF directly in chrome
+            }
+    options.add_experimental_option("prefs", profile)
+    driver = webdriver.Chrome(options=options)
+    driver.get(url)
 
-        print("Locating month")
-        # encontra botão referente ao mês. Datas só podem ser clicadas se estiverem visíveis
-        all_months = driver.find_elements(By.XPATH, '//ul[@class="konsertina"]')
-        # TODO: exceção para encontrar elemento abaixo
-        ActionChains(driver).move_to_element(all_months[-search_date.month]).click().perform()
-    #     print(all_months[-search_date.month].get_attribute('outerHTML'))
-        
+    select_year_xpath = '//*[@id="cboAno"]'
+    search_button_xpath = '/html/body/div/div[1]/div/div/div/div/div/form/div/div[5]/div/input'
 
-        print(f'Searching publication(s) in {search_date.strftime("%d/%m/%Y")}')
-        # encontra todas as datas disponíveis na página
-        all_dates = driver.find_elements(By.XPATH, '//li')
+    select = Select(driver.find_element(By.XPATH, select_year_xpath))
+    select.select_by_visible_text(str(search_date.year))
 
-        # encontra os links corretos para a data desejada
-        i = 0
-        download_queue = []
-        links = []
-        for i in range(len(all_dates)):
-            link_date = re.findall(r'href="(.*?)"(.*?)&', all_dates[i].get_attribute('outerHTML'))
+    driver.find_element(By.XPATH, search_button_xpath).click()
 
-            try:
-                if link_date[0][1][1:] == search_date.strftime('%d/%m/%Y'):
-                    links.append(link_date[1][0].replace('diarioOficiaI', 'diarioOficial'))
-                    download_queue.append(i)
-            except:
-                pass
-            
-        
-        downloaded_files = []
-        if len(download_queue) > 0:
-            utils.create_temp_folder(temp_folder)
-            
-            print("Start download file(s)")
-            for i in download_queue:
-                try:
-                    # clica na data
-                    ActionChains(driver).move_to_element(all_dates[i]).perform()
-                    all_dates[i].click()
+    # busca todas as datas na página
+    all_itens = driver.find_elements(By.CLASS_NAME, "todo-task")
 
-                    # clica no documento para iniciar o download
-                    link = all_dates[i].find_elements(By.TAG_NAME, 'a')[2]
-    #                 ActionChains(driver).move_to_element(link).click().perform()
-    #                 link
-                    driver.execute_script("arguments[0].click();", link)
-                except:
-                    traceback.print_exc()
-                    pass
+    # filtra todas as datas buscando as publicações para o dia escolhido extraindo os links
+    s_date = search_date.strftime("%d/%m/%Y")
+    links = []
+    for item in all_itens:
+        if item.get_attribute('outerHTML').find(s_date) > -1:
+            link = item.find_element(By.TAG_NAME, 'a').get_attribute("href")
+            links.append(link)
 
-            print("Waiting download file(s)")
-            # espera que todos os arquivos sejam baixados. Segue o fluxo caso estoure o timeout de 30 segundos
-            inicio = dt.now()
-            timeout = dt.now() - inicio
-            while len(download_queue) > len(downloaded_files) and timeout.seconds < 60:
-                downloaded_files = glob.glob(f'{temp_folder}*.pdf')
-                timeout = dt.now() - inicio
-            print(downloaded_files)
-            
-        else:
-            print(f'No publications found in {search_date.strftime("%d/%m/%Y")}')
-    except:
-        downloaded_files = []
-        traceback.print_exc()
 
-    return downloaded_files, temp_folder, links
+    # faz o download dos arquivos
+    files = []
+    for link in links:
+        filename = f'{temp_folder}{search_date} - {links.index(link)}.pdf'
+        response = utils.download_to_file(link, filename)
+        if response.ok:
+            files.append(filename)
+    
+    return files, temp_folder, links
 
 #  
 #  name: Diário Oficial de São Desidério (DOM)
