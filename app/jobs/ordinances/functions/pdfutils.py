@@ -6,6 +6,7 @@ import time
 import glob as glob
 import cv2
 import numpy as np
+import logging
 from . import utils
 
 from datetime import datetime as dt, timedelta as td
@@ -18,6 +19,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from PIL import Image
 from pdf2image import convert_from_path 
+
+
+log = logging.getLogger(__name__)
 
 #  
 #  name: Extrai texto de um pdf
@@ -330,7 +334,13 @@ def dom_correntina(s_date):
     except:
         bt.click()
 
-    docs = driver.find_element(By.TAG_NAME, 'table').find_elements(By.TAG_NAME, 'a')
+    try:
+        tabela = driver.find_element(By.XPATH, '//table')
+        docs = tabela.find_elements(By.TAG_NAME, 'a')
+    except:
+        log.debug("No publications founded")
+        docs = []    
+    
     download_queue = [] 
 
     for doc in docs:
