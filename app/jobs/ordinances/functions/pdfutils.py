@@ -1570,7 +1570,7 @@ def dom_serra_dourada(search_date):
 #  
 def dom_canapolis(search_date):
     # search_date = '2022-04-23'
-    url = 'http://www.canapolis.ba.gov.br/diariooficial/'
+    url = 'http://diariooficial.canapolis.ba.gov.br/'
 
     temp_folder = 'canapolis-download/'
     utils.create_temp_folder(temp_folder)
