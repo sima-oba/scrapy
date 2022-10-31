@@ -1370,20 +1370,18 @@ def dom_cotegipe(search_date):
 #  
 def dom_santana(search_date):
     search_date = dt.strptime(search_date, '%Y-%m-%d')
-
-    url = f'https://www.santana.ba.gov.br/Site/DiarioOficial'
+    
+    url = f'https://www.santana.ba.gov.br/site/diariooficial'
 
     temp_folder = 'portarias-dom-santana/'
-
-    utils.create_temp_folder(temp_folder)
-
+    
     options = webdriver.ChromeOptions()
     options.add_argument('ignore-certificate-errors')
     options.add_argument('headless')
     options.add_argument('disable-dev-shm-usage')
     options.add_argument('disable-gpu')
     options.add_argument('window-size=1024x768')
-    profile = {#"plugins.plugins_list": [{"enabled": False, "name": "Chrome PDF Viewer"}], # Disable Chrome's PDF Viewer
+    profile = {
             "download.default_directory" : f"{os.getcwd()}/{temp_folder}" , 
             "download.extensions_to_open": "applications/pdf",
             "download.prompt_for_download": False, #To auto download the file
@@ -1392,65 +1390,46 @@ def dom_santana(search_date):
             }
     options.add_experimental_option("prefs", profile)
     driver = webdriver.Chrome(options=options)
+    driver.set_window_size(1024, 768)
 
-    print('Acessing Santana DOM')
-    driver.get(url)
+    driver.get(url) 
 
-    print(f'Searching year {search_date.year}')
-    # seleciona o ano
-    xpath_select = f'//*[@id="diarioOficial_ano"]'
-    select = Select(driver.find_element(By.XPATH, xpath_select))
-    select.select_by_visible_text(str(search_date.year))
+    # preenche os campos de busca com a data desejada
+    el_start_date = driver.find_element(By.ID, 'diarioOficial_dataInicial')
+    el_end_date = driver.find_element(By.ID, 'diarioOficial_dataFinal')
 
-    # pesquisar ano
-    xpath = '//*[@id="main"]/div/div/div/div/div/section/article/form/div[4]/div[3]/input'
+    el_start_date.send_keys(search_date.strftime('%d%m%Y'))
+    el_end_date.send_keys(search_date.strftime('%d%m%Y'))
+
+    xpath = '//input[@type="submit"]'
     bt = driver.find_element(By.XPATH, xpath)
-    ActionChains(driver).move_to_element(bt).click().perform()
 
-    time.sleep(2)
+    try:
+        bt.click()
+    except:
+        bt.click()
 
-    # encontra todas as datas disponíveis na página
-    all_dates = driver.find_elements(By.XPATH, '//div[@class="collapsible"]')
+    try:
+        tabela = driver.find_element(By.XPATH, '//table')
+        docs = tabela.find_elements(By.TAG_NAME, 'a')
+    except:
+        log.debug("No publications founded")
+        docs = []    
     
-    print(f'Searching month {search_date.month}')
-    # localizar botão referente ao mês para que possa mostrar os link das datas
-    all_months = driver.find_elements(By.XPATH, '//li[@class="closed"]')
-    all_months[-search_date.month].click()
+    download_queue = [] 
 
-
-    print(f'Searching day {search_date.day}')
-    # encontra os links corretos para a data desejada
-    i = 0
-    download_queue = []
+    for doc in docs:
+        download_queue.append(doc.get_attribute('href'))
+    
+    
+    downloaded_files = []
     links = []
-    for i in range(len(all_dates)):
-        element_html = all_dates[i].get_attribute('outerHTML')
 
-        if len(re.findall(f'{search_date.strftime("%d/%m/%Y")} - Edição', element_html)) > 0:
-            link = url + re.findall(r'href="(.*?)"', element_html)[0]
-            download_queue.append(i)
-            links.append(link)
-
-            # clica no botão para baixar o arquivo
-            time.sleep(1)
-            ActionChains(driver).move_to_element(all_dates[i].find_element(By.TAG_NAME, 'a')).click().perform()
-            # ActionChains(driver).move_to_element(all_dates[i].find_element(By.TAG_NAME, 'a'))
-
-
-    print(f'Waiting download {len(download_queue)} file(s)')
-    downloaded_files = glob.glob(f'{temp_folder}*.pdf')
-    inicio = dt.now()
-    timeout = dt.now()- inicio
-
-    while timeout.seconds < 30 and len(downloaded_files) < len(download_queue):
-        downloaded_files = glob.glob(f'{temp_folder}*.pdf')
-        timeout = dt.now()- inicio
-
-        for f in downloaded_files:
-            if f.find('crdownload') > -1:
-                downloaded_files = []
-
-
+    for i in range(len(download_queue)):
+        utils.download_to_file(download_queue[i], f'{temp_folder}{search_date} - {i}.pdf')
+        downloaded_files.append(f'{temp_folder}{search_date} - {i}.pdf')
+        links.append(download_queue[i])
+            
     driver.quit()
 
     return downloaded_files, links, temp_folder
