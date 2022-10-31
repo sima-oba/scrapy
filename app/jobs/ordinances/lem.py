@@ -561,8 +561,7 @@ def _import_date(search_date):
     return regs
     
 def import_news():
-    # yesterday = (datetime.utcnow() - timedelta(days=1)).strftime('%Y-%m-%d')
-    yesterday = "2021-10-25"
+    yesterday = (datetime.utcnow() - timedelta(days=1)).strftime('%Y-%m-%d')
     
     _import_date(yesterday)
     
