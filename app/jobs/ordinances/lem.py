@@ -522,12 +522,13 @@ def _import_date(search_date):
     # files = ['documentos-luis/aprovacao_localizacao_reserva.pdf']
     # links = ['']
 
+    regs = []
+    
     # verifica se o documento foi encontrado
     for filename, link in zip(files, links):
         pages = pdfutils.ocr_extract_page_text(filename)
         print("Reading file")
 
-        regs = []
         for page in pages:
             ordinance_text = page.replace('-','–')
             for ord_type in type_list:
