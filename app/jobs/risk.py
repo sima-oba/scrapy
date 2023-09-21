@@ -48,7 +48,7 @@ def fire_risk(url):
     tmp_file = '/tmp/fire_risk.csv'
     
     log.debug(f'Seeking fire risk at {url}')
-    res = requests.get(url, allow_redirects=True)
+    res = requests.get(url, allow_redirects=True, verify=False)
 
     with open(tmp_file, 'wb') as file:
         file.write(res.content)
