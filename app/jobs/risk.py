@@ -10,6 +10,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from tempfile import NamedTemporaryFile
+from bs4 import BeautifulSoup
 
 from .. import publisher
 
@@ -44,23 +46,25 @@ CITIES = [
 ]
 
 
-def fire_risk(url):
-    tmp_file = '/tmp/fire_risk.csv'
-    
-    log.debug(f'Seeking fire risk at {url}')
+def fire_risk(url: str):
     res = requests.get(url, allow_redirects=True, verify=False)
+    soup = BeautifulSoup(res.text, 'html.parser')
+    element = soup.select('tr:nth-last-child(2) a')[0]
+    file_url = url.rstrip('/') + '/' + element['href']
 
-    with open(tmp_file, 'wb') as file:
-        file.write(res.content)
+    log.debug(f'Seeking fire risk at {file_url}')
+    
+    res = requests.get(file_url, allow_redirects=True, verify=False)
+    tmp_file = NamedTemporaryFile(prefix='fire-risk_', suffix='.csv')
+    tmp_file.write(res.content)
 
     # Load data from all files in a single dataframe and filter by Bahia
     log.debug('Loading data from Bahia')
 
-    df = geopandas.read_file(tmp_file)
+    df = geopandas.read_file(tmp_file.name)
     df_ba = df
     df_cities = geopandas.GeoDataFrame()
-    os.remove(tmp_file)
-
+    
     log.debug('Filtering cities in the west of Bahia')
 
     for reg in df_ba.iterrows():
@@ -76,6 +80,7 @@ def fire_risk(url):
         publisher.publish('FIRE_RISK', df_cities)
 
     log.debug(f'Records processed: {len(df_cities)}')
+    tmp_file.close()
 
 
 def climate_risk():
